@@ -23,7 +23,7 @@ from google.adk.agents.callback_context import CallbackContext
 from google.adk.apps import App
 from google.adk.code_executors import AgentEngineSandboxCodeExecutor
 from google.adk.models import Gemini
-from google.adk.tools.preload_memory_tool import PreloadMemoryTool
+from google.adk.tools import ToolContext
 from google.cloud import firestore
 from google.genai import types
 
@@ -32,6 +32,7 @@ from .a2ui_utils import a2ui_callback
 MODEL = "gemini-2.5-flash"
 PROJECT_ID = "qwiklabs-gcp-04-5ebc0f028b72"
 LOCATION = "us-central1"
+BUCKET_NAME = "care-assistant-assets-5ebc0f02"
 
 # Agent Engine Code Execution Sandbox
 sandbox_code_executor = AgentEngineSandboxCodeExecutor()
@@ -512,6 +513,65 @@ def search_nearby_places(
         return [{"error": f"Places search failed: {str(e)}"}]
 
 
+def generate_memory_video(
+    prompt: str,
+    tool_context: ToolContext,
+) -> Dict[str, Any]:
+    """Generates a short memory video for a patient activity or prompt using Google's Omni model (gemini-omni-flash-preview) in the global region.
+
+    Saves the video with tool_context.save_artifact for the Playground Artifacts panel and uploads it to public Cloud Storage, returning the public HTTPS URL.
+
+    Args:
+        prompt: Detailed description of the video scene tailored to the patient (e.g., 'A calm, beautiful rose garden with gentle sunlight for Astrid').
+        tool_context: ToolContext instance for saving the artifact.
+
+    Returns:
+        A dictionary containing the status, public_url, and artifact_name.
+    """
+    import base64
+    import uuid
+    from google import genai
+    from google.cloud import storage
+
+    client = genai.Client(vertexai=True, project=PROJECT_ID, location="global")
+    interaction = client.interactions.create(
+        model="gemini-omni-flash-preview",
+        input=prompt,
+    )
+
+    video_bytes = None
+    if hasattr(interaction, "output_video") and interaction.output_video and hasattr(interaction.output_video, "data"):
+        raw_data = interaction.output_video.data
+        if isinstance(raw_data, str):
+            video_bytes = base64.b64decode(raw_data)
+        elif isinstance(raw_data, bytes):
+            video_bytes = raw_data
+
+    if not video_bytes:
+        return {"error": "Failed to generate video or extract video data from interaction response."}
+
+    video_id = str(uuid.uuid4())[:8]
+    filename = f"memory_video_{video_id}.mp4"
+
+    # 1. Save artifact for Playground's Artifacts panel using tool_context.save_artifact
+    artifact_part = types.Part.from_bytes(data=video_bytes, mime_type="video/mp4")
+    tool_context.save_artifact(filename=filename, artifact=artifact_part)
+
+    # 2. Upload video bytes directly to public Cloud Storage bucket (without writing local file)
+    storage_client = storage.Client(project=PROJECT_ID)
+    bucket = storage_client.bucket(BUCKET_NAME)
+    blob = bucket.blob(f"videos/{filename}")
+    blob.upload_from_string(video_bytes, content_type="video/mp4")
+
+    public_url = f"https://storage.googleapis.com/{BUCKET_NAME}/videos/{filename}"
+
+    return {
+        "status": "success",
+        "public_url": public_url,
+        "artifact_name": filename,
+    }
+
+
 _schema_manager = A2uiSchemaManager(
     version="0.8",
     catalogs=[BasicCatalog.get_config("0.8")],
@@ -577,6 +637,7 @@ root_agent = Agent(
         geocode_address,
         search_nearby_places,
         log_patient_activity,
+        generate_memory_video,
     ],
     after_model_callback=a2ui_callback,
     after_agent_callback=generate_memories_callback,
