@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Care Assistant AI — Health Memory Activity Planner</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined">
+<style>
+  :root {
+    --primary: #00796b;
+    --primary-light: #e0f2f1;
+    --primary-dark: #004d40;
+    --primary-accent: #0288d1;
+    --bg-surface: #f4f7f6;
+    --card-bg: #ffffff;
+    --border-color: #e0e6e5;
+    --text-main: #2c3e50;
+    --text-muted: #546e7a;
+    --shadow-sm: 0 2px 6px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+    --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg-surface);
+    color: var(--text-main);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  /* Header */
+  header {
+    background: var(--primary);
+    color: #ffffff;
+    padding: 1.2rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .header-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+  }
+
+  .header-icon {
+    font-size: 2.2rem;
+  }
+
+  .header-title h1 {
+    margin: 0;
+    font-size: 1.35rem;
+    font-weight: 700;
+  }
+
+  .header-title p {
+    margin: 0.2rem 0 0 0;
+    font-size: 0.85rem;
+    opacity: 0.9;
+  }
+
+  /* Main Container */
+  main {
+    flex: 1;
+    max-width: 900px;
+    width: 100%;
+    margin: 1.5rem auto;
+    padding: 0 1.25rem;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Workflow Progress Indicator */
+  .workflow-progress {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .step-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+
+  .step-item.active {
+    color: var(--primary);
+  }
+
+  .step-item.completed {
+    color: var(--primary-dark);
+  }
+
+  .step-badge {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--bg-surface);
+    border: 2px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+  }
+
+  .step-item.active .step-badge {
+    background: var(--primary-light);
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+
+  .step-item.completed .step-badge {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #ffffff;
+  }
+
+  .step-connector {
+    flex: 1;
+    height: 2px;
+    background: var(--border-color);
+    margin: 0 1rem;
+  }
+
+  .step-connector.active {
+    background: var(--primary);
+  }
+
+  /* View Panels */
+  .view-panel {
+    display: none;
+    animation: fadeIn 0.3s ease-in-out forwards;
+  }
+
+  .view-panel.active {
+    display: block;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .section-heading {
+    margin-bottom: 1.5rem;
+    text-align: center;
+  }
+
+  .section-heading h2 {
+    font-size: 1.6rem;
+    margin: 0 0 0.4rem 0;
+    color: var(--primary-dark);
+  }
+
+  .section-heading p {
+    margin: 0;
+    font-size: 0.95rem;
+    color: var(--text-muted);
+  }
+
+  /* Step 1: Patient Selection Grid */
+  .patients-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1.2rem;
+  }
+
+  .patient-card {
+    background: var(--card-bg);
+    border: 2px solid var(--border-color);
+    border-radius: 16px;
+    padding: 1.2rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .patient-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .patient-card.selected {
+    border-color: var(--primary);
+    background-color: var(--primary-light);
+  }
+
+  .patient-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.8rem;
+  }
+
+  .patient-id-tag {
+    background: var(--primary-light);
+    color: var(--primary);
+    padding: 0.25rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+
+  .patient-name {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin: 0.2rem 0;
+    color: var(--text-main);
+  }
+
+  .patient-meta {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 0.8rem;
+  }
+
+  .patient-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .patient-tag {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+
+  /* Step 2: Duration Options */
+  .duration-options {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .duration-card {
+    background: var(--card-bg);
+    border: 2px solid var(--border-color);
+    border-radius: 16px;
+    padding: 1.4rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .duration-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .duration-card.selected {
+    border-color: var(--primary);
+    background-color: var(--primary-light);
+  }
+
+  .duration-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--primary-light);
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    flex-shrink: 0;
+  }
+
+  .duration-info h3 {
+    margin: 0 0 0.3rem 0;
+    font-size: 1.15rem;
+    color: var(--text-main);
+  }
+
+  .duration-info p {
+    margin: 0;
+    font-size: 0.88rem;
+    color: var(--text-muted);
+  }
+
+  .action-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 2rem;
+  }
+
+  .btn {
+    padding: 0.75rem 1.4rem;
+    border-radius: 24px;
+    border: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+  }
+
+  .btn-secondary {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+  }
+
+  .btn-secondary:hover {
+    background: var(--bg-surface);
+  }
+
+  .btn-primary {
+    background: var(--primary);
+    color: #ffffff;
+  }
+
+  .btn-primary:hover {
+    background: var(--primary-dark);
+  }
+
+  .btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  /* Result View */
+  .result-container {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: var(--shadow-md);
+  }
+
+  .result-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 1.2rem;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .result-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    padding: 0.4rem 0.9rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 700;
+  }
+
+  .result-actions {
+    display: flex;
+    gap: 0.8rem;
+  }
+
+  /* Loading State */
+  .loading-card {
+    text-align: center;
+    padding: 3rem 1.5rem;
+  }
+
+  .spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid var(--primary-light);
+    border-top: 4px solid var(--primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1.5rem auto;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  /* Error State */
+  .error-card {
+    background: #fde8e8;
+    border: 1px solid #f8b4b4;
+    border-radius: 16px;
+    padding: 1.5rem;
+    color: #9b1c1c;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .error-card span {
+    font-size: 1.8rem;
+  }
+
+  /* Polished Activity Render Styling */
+  .activity-display-card {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .activity-banner {
+    background: linear-gradient(135deg, var(--primary-light), #ffffff);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 1.4rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .activity-banner-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: var(--primary);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    flex-shrink: 0;
+  }
+
+  .activity-banner-content h3 {
+    margin: 0 0 0.4rem 0;
+    font-size: 1.3rem;
+    color: var(--primary-dark);
+  }
+
+  .activity-banner-content p {
+    margin: 0;
+    font-size: 0.92rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+  }
+
+  .activity-section-block {
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 1.25rem 1.4rem;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .activity-section-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--primary-dark);
+    margin: 0 0 0.8rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .activity-section-title span {
+    font-size: 1.3rem;
+    color: var(--primary);
+  }
+
+  .activity-section-body {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--text-main);
+  }
+
+  .activity-section-body ul, .activity-section-body ol {
+    margin: 0.5rem 0 0 0;
+    padding-left: 1.2rem;
+  }
+
+  .activity-section-body li {
+    margin-bottom: 0.4rem;
+  }
+
+  /* Redesigned 3-Section Activity Display */
+  .activity-green-box {
+    background-color: var(--primary-light);
+    border: 1px solid #b2dfdb;
+    border-radius: 18px;
+    padding: 1.5rem 1.6rem;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .box-heading {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--primary-dark);
+    margin: 0 0 0.9rem 0;
+  }
+
+  .box-inner-card {
+    background-color: #ffffff;
+    border: 1px solid #e0e6e5;
+    border-radius: 14px;
+    padding: 1.1rem 1.3rem;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+  }
+
+  .box-text {
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: var(--text-main);
+    font-weight: 500;
+    margin: 0;
+  }
+
+  .questions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  .question-card {
+    border-left: 4px solid var(--primary);
+  }
+
+  .activity-secondary-box {
+    background-color: #f7faf9;
+    border: 1px solid #e0e6e5;
+    border-radius: 16px;
+    padding: 1.25rem 1.5rem;
+  }
+
+  .secondary-heading {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--primary-dark);
+    margin: 0 0 0.4rem 0;
+  }
+
+  .secondary-text {
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: var(--text-muted);
+    margin: 0;
+  }
+
+  .material-symbols-outlined { font-family: 'Material Symbols Outlined'; font-size: 1.25rem; line-height: 1; vertical-align: middle; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-brand">
+    <span class="material-symbols-outlined header-icon">health_and_safety</span>
+    <div class="header-title">
+      <h1>Care Assistant AI</h1>
+      <p>Health Memory Activity Planner for Nursing & Care Staff</p>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- Step Indicator -->
+  <div class="workflow-progress">
+    <div class="step-item active" id="step-nav-1">
+      <div class="step-badge">1</div>
+      <span>Select Patient</span>
+    </div>
+    <div class="step-connector" id="conn-1"></div>
+    <div class="step-item" id="step-nav-2">
+      <div class="step-badge">2</div>
+      <span>Choose Duration</span>
+    </div>
+    <div class="step-connector" id="conn-2"></div>
+    <div class="step-item" id="step-nav-3">
+      <div class="step-badge">3</div>
+      <span>Generated Activity</span>
+    </div>
+  </div>
+
+  <!-- STEP 1: Patient Selection -->
+  <div class="view-panel active" id="view-step-1">
+    <div class="section-heading">
+      <h2>Hello! Who would you like to create an activity for today?</h2>
+      <p>Select a patient profile to view tailored sensory, cognitive, or reminiscing activities.</p>
+    </div>
+
+    <div class="patients-grid" id="patients-grid">
+      <!-- 10 Swedish Patient cards dynamically inserted -->
+    </div>
+  </div>
+
+  <!-- STEP 2: Duration Selection -->
+  <div class="view-panel" id="view-step-2">
+    <div class="section-heading">
+      <h2>How much time do you have for today's activity?</h2>
+      <p>Select a timeframe tailored to your shift schedule and patient engagement level.</p>
+    </div>
+
+    <div class="duration-options">
+      <div class="duration-card" data-duration="5 minutes or less">
+        <div class="duration-icon">
+          <span class="material-symbols-outlined">timer_5</span>
+        </div>
+        <div class="duration-info">
+          <h3>5 minutes or less</h3>
+          <p>Quick sensory check-in, calming breathing, or single photo reminiscing cue.</p>
+        </div>
+      </div>
+
+      <div class="duration-card" data-duration="10–15 minutes">
+        <div class="duration-icon">
+          <span class="material-symbols-outlined">schedule</span>
+        </div>
+        <div class="duration-info">
+          <h3>10–15 minutes</h3>
+          <p>Focused tactile exercise, short story discussion, or chair music routine.</p>
+        </div>
+      </div>
+
+      <div class="duration-card" data-duration="30 minutes">
+        <div class="duration-icon">
+          <span class="material-symbols-outlined">hourglass_top</span>
+        </div>
+        <div class="duration-info">
+          <h3>30 minutes</h3>
+          <p>Deep reminiscing session, full craft/gardening activity, or structured group time.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-nav">
+      <button class="btn btn-secondary" id="btn-back-step1">
+        <span class="material-symbols-outlined">arrow_back</span>
+        <span>Back to Patients</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- RESULT / LOADING VIEW -->
+  <div class="view-panel" id="view-step-3">
+    <!-- Loading Screen -->
+    <div class="result-container loading-card" id="loading-state">
+      <div class="spinner"></div>
+      <h3 style="margin:0 0 0.5rem 0; color:var(--primary);">Crafting Personalized Health Memory Activity...</h3>
+      <p style="color:var(--text-muted); margin:0;" id="loading-subtitle">Querying AI model with patient profile and time constraints...</p>
+    </div>
+
+    <!-- Error Screen -->
+    <div class="error-card" id="error-state" style="display:none;">
+      <span class="material-symbols-outlined">error</span>
+      <div>
+        <h4 style="margin:0 0 0.3rem 0;">Unable to Generate Activity</h4>
+        <p style="margin:0 0 0.8rem 0; font-size:0.9rem;" id="error-message">An issue occurred while reaching the AI assistant.</p>
+        <button class="btn btn-secondary" id="btn-retry" style="padding:0.4rem 0.9rem; font-size:0.85rem;">
+          <span class="material-symbols-outlined">refresh</span>
+          <span>Retry Request</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Generated Activity Display -->
+    <div class="result-container" id="result-state" style="display:none;">
+      <div class="result-header">
+        <div>
+          <div class="result-badge" id="result-patient-badge">
+            <span class="material-symbols-outlined">person</span>
+            <span id="badge-patient-text">Patient 001 — Astrid Andersson</span>
+          </div>
+          <div class="result-badge" id="result-time-badge" style="background:#e1f5fe; color:#0277bd; margin-left:0.5rem;">
+            <span class="material-symbols-outlined">schedule</span>
+            <span id="badge-time-text">10–15 minutes</span>
+          </div>
+        </div>
+
+        <div class="result-actions">
+          <button class="btn btn-secondary" id="btn-regenerate">
+            <span class="material-symbols-outlined">autorenew</span>
+            <span>Regenerate</span>
+          </button>
+          <button class="btn btn-primary" id="btn-new-session">
+            <span class="material-symbols-outlined">add_circle</span>
+            <span>New Activity</span>
+          </button>
+        </div>
+      </div>
+
+      <div id="activity-content">
+        <!-- Polished Rendered Activity Cards -->
+      </div>
+
+      <div class="action-nav" style="margin-top:1.5rem; border-top:1px solid var(--border-color); padding-top:1rem;">
+        <button class="btn btn-secondary" id="btn-change-duration">
+          <span class="material-symbols-outlined">arrow_back</span>
+          <span>Change Duration</span>
+        </button>
+        <button class="btn btn-secondary" id="btn-change-patient">
+          <span class="material-symbols-outlined">people</span>
+          <span>Select Different Patient</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+// State Management
+const state = {
+  selectedPatient: null,
+  selectedDuration: null,
+  isGenerating: false
+};
+
+// Fictional Swedish Patients (001-009)
+const PATIENTS = [
+  { id: "001", name: "Astrid Andersson", age: 82, room: "101-A", mobility: "Walker assisted", cognitive: "Mild cognitive impairment (MCI)", likes: ["Gardening", "Beethoven", "Earl Grey tea"] },
+  { id: "002", name: "Erik Johansson", age: 78, room: "102-B", mobility: "Wheelchair bound", cognitive: "Moderate vascular dementia", likes: ["Chess", "History books", "Jazz music"] },
+  { id: "003", name: "Ingrid Karlsson", age: 89, room: "105-A", mobility: "Independent with cane", cognitive: "Alert and oriented x4", likes: ["Knitting", "Crossword puzzles", "Baking stories"] },
+  { id: "004", name: "Lars Nilsson", age: 75, room: "108-C", mobility: "Bed rest / High assist", cognitive: "Advanced Alzheimer's", likes: ["Soft blankets", "Lavender scent", "Nature sounds"] },
+  { id: "005", name: "Birgitta Eriksson", age: 84, room: "112-B", mobility: "Walker assisted", cognitive: "Mild dementia", likes: ["Bird watching", "Sing-alongs", "Flower arranging"] },
+  { id: "006", name: "Sven Larsson", age: 81, room: "115-A", mobility: "Wheelchair bound", cognitive: "Lewy body dementia", likes: ["Vintage cars", "Folk music", "Harmonica"] },
+  { id: "007", name: "Margareta Olsson", age: 86, room: "118-B", mobility: "Walker assisted", cognitive: "Mild cognitive impairment", likes: ["Baking recipes", "Rosemary scent", "Piano melodies"] },
+  { id: "008", name: "Nils Persson", age: 79, room: "120-C", mobility: "Independent with cane", cognitive: "Alert and oriented x3", likes: ["Origami", "Nature gardens", "Instrumental music"] },
+  { id: "009", name: "Eva Svensson", age: 91, room: "124-A", mobility: "Wheelchair bound", cognitive: "Moderate Alzheimer's", likes: ["Soft velvet fabric", "Classic melodies", "Warm tea"] }
+];
+
+// Elements
+const viewStep1 = document.getElementById("view-step-1");
+const viewStep2 = document.getElementById("view-step-2");
+const viewStep3 = document.getElementById("view-step-3");
+
+const stepNav1 = document.getElementById("step-nav-1");
+const stepNav2 = document.getElementById("step-nav-2");
+const stepNav3 = document.getElementById("step-nav-3");
+
+const conn1 = document.getElementById("conn-1");
+const conn2 = document.getElementById("conn-2");
+
+const patientsGrid = document.getElementById("patients-grid");
+const loadingState = document.getElementById("loading-state");
+const errorState = document.getElementById("error-state");
+const resultState = document.getElementById("result-state");
+const activityContent = document.getElementById("activity-content");
+
+function init() {
+  renderPatientsGrid();
+  attachEventListeners();
+}
+
+function renderPatientsGrid() {
+  patientsGrid.innerHTML = "";
+  PATIENTS.forEach(p => {
+    const card = document.createElement("div");
+    card.className = "patient-card";
+    if (state.selectedPatient && state.selectedPatient.id === p.id) {
+      card.classList.add("selected");
+    }
+
+    card.innerHTML = `
+      <div>
+        <div class="patient-header">
+          <span class="patient-id-tag">Patient ${p.id}</span>
+          <span class="material-symbols-outlined" style="color:var(--text-muted);">arrow_forward</span>
+        </div>
+        <div class="patient-name">${p.name}</div>
+        <div class="patient-meta">Age: ${p.age} | Room: ${p.room}</div>
+      </div>
+      <div class="patient-tags">
+        <span class="patient-tag">${p.mobility}</span>
+        <span class="patient-tag">${p.cognitive.split(' ')[0]} Cognitive</span>
+      </div>
+    `;
+
+    card.addEventListener("click", () => selectPatient(p));
+    patientsGrid.appendChild(card);
+  });
+}
+
+function attachEventListeners() {
+  document.querySelectorAll(".duration-card").forEach(card => {
+    card.addEventListener("click", () => {
+      if (state.isGenerating) return;
+      const duration = card.getAttribute("data-duration");
+      selectDuration(duration);
+    });
+  });
+
+  document.getElementById("btn-back-step1").addEventListener("click", () => navigateToStep(1));
+  document.getElementById("btn-change-duration").addEventListener("click", () => navigateToStep(2));
+  document.getElementById("btn-change-patient").addEventListener("click", () => navigateToStep(1));
+
+  document.getElementById("btn-regenerate").addEventListener("click", triggerActivityGeneration);
+  document.getElementById("btn-new-session").addEventListener("click", () => {
+    state.selectedPatient = null;
+    state.selectedDuration = null;
+    renderPatientsGrid();
+    navigateToStep(1);
+  });
+
+  document.getElementById("btn-retry").addEventListener("click", triggerActivityGeneration);
+}
+
+function selectPatient(patient) {
+  state.selectedPatient = patient;
+  renderPatientsGrid();
+  navigateToStep(2);
+}
+
+function selectDuration(duration) {
+  state.selectedDuration = duration;
+  navigateToStep(3);
+  triggerActivityGeneration();
+}
+
+function navigateToStep(step) {
+  viewStep1.classList.remove("active");
+  viewStep2.classList.remove("active");
+  viewStep3.classList.remove("active");
+
+  stepNav1.className = "step-item";
+  stepNav2.className = "step-item";
+  stepNav3.className = "step-item";
+
+  conn1.className = "step-connector";
+  conn2.className = "step-connector";
+
+  if (step === 1) {
+    viewStep1.classList.add("active");
+    stepNav1.classList.add("active");
+  } else if (step === 2) {
+    viewStep2.classList.add("active");
+    stepNav1.classList.add("completed");
+    stepNav2.classList.add("active");
+    conn1.classList.add("active");
+  } else if (step === 3) {
+    viewStep3.classList.add("active");
+    stepNav1.classList.add("completed");
+    stepNav2.classList.add("completed");
+    stepNav3.classList.add("active");
+    conn1.classList.add("active");
+    conn2.classList.add("active");
+  }
+}
+
+async function triggerActivityGeneration() {
+  if (state.isGenerating || !state.selectedPatient || !state.selectedDuration) return;
+  
+  state.isGenerating = true;
+  loadingState.style.display = "block";
+  errorState.style.display = "none";
+  resultState.style.display = "none";
+
+  document.getElementById("loading-subtitle").textContent = 
+    `Consulting AI for Patient ${state.selectedPatient.id} (${state.selectedPatient.name}) lasting ${state.selectedDuration}...`;
+
+  const constructedPrompt = `Create a simplified health memory activity for Patient ${state.selectedPatient.id} (${state.selectedPatient.name}) lasting ${state.selectedDuration}.
+
+Output Requirements:
+1. Suggested activity: 1–2 short sentences describing the activity personalized for ${state.selectedPatient.name} and why it suits them.
+2. Conversation starters: Exactly 3 short, natural, open-ended questions for the caregiver to ask ${state.selectedPatient.name}.
+3. STRICT: Do NOT include setup, materials, instructions, shift context, or lengthy explanations.`;
+
+  try {
+    const res = await fetch("/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: constructedPrompt })
+    });
+
+    const raw = await res.text();
+    let data;
+    try { data = JSON.parse(raw); }
+    catch { throw new Error(`Server response error (HTTP ${res.status}).`); }
+
+    if (!data || !data.parts || data.parts.length === 0) {
+      throw new Error("No activity details returned from the assistant.");
+    }
+
+    renderActivityResult(data.parts);
+
+  } catch (err) {
+    errorState.style.display = "flex";
+    document.getElementById("error-message").textContent = err.message || "Failed to reach AI generation service.";
+  } finally {
+    loadingState.style.display = "none";
+    state.isGenerating = false;
+  }
+}
+
+/* ----------------------------------------------------------------------------
+ * SIMPLIFIED RESPONSE NORMALIZER & CLEAN RENDERER
+ * -------------------------------------------------------------------------- */
+
+function normalizeActivityData(parts, patient, duration) {
+  let rawTextBlocks = [];
+  let jsonObjects = [];
+
+  (parts || []).forEach(p => {
+    if (!p) return;
+    if (p.kind === "a2ui" && p.data) {
+      if (typeof p.data === "object") jsonObjects.push(p.data);
+      else if (typeof p.data === "string") rawTextBlocks.push(p.data);
+    } else if (p.kind === "text" || p.text) {
+      const txt = p.text || "";
+      rawTextBlocks.push(txt);
+
+      const cleaned = txt
+        .replace(/<\/?(?:a2ui-json|a2a_datapart_json)>/gi, "")
+        .replace(/^```[a-z]*\n?/i, "")
+        .replace(/\n?```$/i, "")
+        .trim();
+
+      if ((cleaned.startsWith("{") && cleaned.endsWith("}")) || (cleaned.startsWith("[") && cleaned.endsWith("]"))) {
+        try {
+          const parsed = JSON.parse(cleaned);
+          if (parsed && typeof parsed === "object") jsonObjects.push(parsed);
+        } catch (e) {}
+      }
+    }
+  });
+
+  let suggestedActivity = "";
+  let whyItFits = "";
+  let questions = [];
+
+  // 1. Process JSON / A2UI objects
+  for (const obj of jsonObjects) {
+    const components = obj.components || (obj.surfaceUpdate && obj.surfaceUpdate.components);
+    if (Array.isArray(components)) {
+      components.forEach(c => {
+        if (!c || !c.component || !c.component.Text) return;
+        const txt = c.component.Text.text?.literalString || (typeof c.component.Text.text === "string" ? c.component.Text.text : "");
+        if (!txt) return;
+        const cleanTxt = txt.trim();
+        const compId = (c.id || "").toLowerCase();
+
+        if (compId.includes("activity") || compId.includes("description") || cleanTxt.toLowerCase().startsWith("suggested activity")) {
+          const body = cleanTxt.replace(/^Suggested activity:?\s*/i, "").replace(/^[0-9.]+\s*/, "").trim();
+          if (body && !suggestedActivity) suggestedActivity = body;
+        } else if (compId.includes("fit") || compId.includes("why") || cleanTxt.toLowerCase().includes("why it fits")) {
+          const body = cleanTxt.replace(/^Why it fits:?\s*/i, "").replace(/^Why this activity fits:?\s*/i, "").trim();
+          if (body) whyItFits = body;
+        } else if (compId.includes("prompt") || compId.includes("starter") || compId.includes("question") || cleanTxt.includes("?")) {
+          if (cleanTxt.includes("?") && !cleanTxt.toLowerCase().includes("conversation starters")) {
+            questions.push(cleanTxt);
+          }
+        }
+      });
+    }
+
+    if (obj.suggested_activity || obj.activity) {
+      suggestedActivity = obj.suggested_activity || obj.activity;
+    }
+    if (obj.why_it_fits || obj.why || obj.reasoning) {
+      whyItFits = obj.why_it_fits || obj.why || obj.reasoning;
+    }
+    if (Array.isArray(obj.conversation_starters || obj.questions || obj.prompts)) {
+      questions = questions.concat(obj.conversation_starters || obj.questions || obj.prompts);
+    }
+  }
+
+  // 2. Fallback to raw text / markdown parsing
+  if (!suggestedActivity || questions.length === 0) {
+    const fullText = rawTextBlocks.join("\n\n")
+      .replace(/<\/?(?:a2ui-json|a2a_datapart_json)>/gi, "")
+      .replace(/```[a-z]*[\s\S]*?```/gi, "");
+
+    if (!suggestedActivity) {
+      const match = fullText.match(/Suggested activity:?\s*([^\n]+(?:\n[^\n]+)?)/i);
+      if (match) {
+        suggestedActivity = match[1].trim();
+      } else {
+        const lines = fullText.split("\n").map(l => l.trim()).filter(l => l && !l.startsWith("#") && !l.toLowerCase().includes("conversation starters"));
+        if (lines.length) suggestedActivity = lines[0];
+      }
+    }
+
+    if (!whyItFits) {
+      const whyMatch = fullText.match(/Why (?:it fits|this activity fits):?\s*([^\n]+(?:\n[^\n]+)?)/i);
+      if (whyMatch) whyItFits = whyMatch[1].trim();
+    }
+
+    if (questions.length === 0) {
+      const qMatches = fullText.match(/(?:"[^"]*\?"|“[^”]*”|[-*•]\s*[^?\n]+\?|[^\n?]+\?)/g);
+      if (qMatches) {
+        questions = qMatches
+          .map(q => q.replace(/^[-*•\d.]+\s*/, "").trim())
+          .filter(q => q.endsWith("?") && !q.toLowerCase().includes("conversation starters"));
+      }
+    }
+  }
+
+  // 3. Clean up Suggested Activity
+  if (suggestedActivity) {
+    suggestedActivity = suggestedActivity
+      .replace(/^Suggested activity:?\s*/i, "")
+      .replace(/^Activity:?\s*/i, "")
+      .replace(/[\n\r]+/g, " ")
+      .trim();
+
+    const sentences = suggestedActivity.match(/[^.!?]+[.!?]+/g) || [suggestedActivity];
+    suggestedActivity = sentences.slice(0, 2).join(" ").trim();
+  }
+
+  const pName = patient ? patient.name : "the patient";
+  const pNameFirst = pName.split(" ")[0];
+  const pLikes = patient && Array.isArray(patient.likes) ? patient.likes.join(", ") : "their favorite memories";
+
+  if (!suggestedActivity) {
+    suggestedActivity = `${pNameFirst} enjoys ${pLikes}, so engage them with gentle conversation and invite them to share memories from their life.`;
+  }
+
+  if (!whyItFits) {
+    whyItFits = `Tailored specifically for ${pNameFirst} based on their interest in ${pLikes} and suited to their cognitive status for a ${duration || '5-15 minute'} session.`;
+  }
+
+  // 4. Ensure EXACTLY 3 clean conversation starters
+  let cleanQuestions = questions
+    .map(q => q.replace(/^["'“]|["'”]$/g, '').replace(/^[-*•\d.]+\s*/, '').trim())
+    .filter(q => q.length > 5 && q.endsWith("?"));
+
+  cleanQuestions = [...new Set(cleanQuestions)];
+
+  const defaultQuestions = [
+    `Have you always enjoyed ${patient && patient.likes ? patient.likes[0] : "music and stories"}?`,
+    `Is there a favorite memory associated with ${patient && patient.likes ? patient.likes[0] : "your life"} that brings you joy?`,
+    `Does thinking about this remind you of a special time or person in your life?`
+  ];
+
+  while (cleanQuestions.length < 3) {
+    const nextQ = defaultQuestions[cleanQuestions.length];
+    if (!cleanQuestions.includes(nextQ)) {
+      cleanQuestions.push(nextQ);
+    }
+  }
+
+  cleanQuestions = cleanQuestions.slice(0, 3);
+
+  return {
+    suggestedActivity,
+    conversationStarters: cleanQuestions,
+    whyItFits
+  };
+}
+
+function renderActivityResult(parts) {
+  activityContent.innerHTML = "";
+  document.getElementById("badge-patient-text").textContent = `Patient ${state.selectedPatient.id} — ${state.selectedPatient.name}`;
+  document.getElementById("badge-time-text").textContent = state.selectedDuration;
+
+  try {
+    const normalized = normalizeActivityData(parts, state.selectedPatient, state.selectedDuration);
+    renderNormalizedActivityUI(normalized);
+  } catch (err) {
+    console.error("Error rendering activity result:", err);
+    errorState.style.display = "flex";
+    document.getElementById("error-message").textContent = "Unable to process the AI response into an activity format. Please try again.";
+  }
+}
+
+function renderNormalizedActivityUI(data) {
+  const card = document.createElement("div");
+  card.className = "activity-display-card";
+
+  // Section 1: Suggested Activity (Rounded Green Box)
+  if (data.suggestedActivity) {
+    const sec1 = document.createElement("div");
+    sec1.className = "activity-green-box";
+    sec1.innerHTML = `
+      <h3 class="box-heading">Suggested activity</h3>
+      <div class="box-inner-card">
+        <p class="box-text">${escapeHtml(data.suggestedActivity)}</p>
+      </div>
+    `;
+    card.appendChild(sec1);
+  }
+
+  // Section 2: Conversation Starters (Separate Rounded Green Box)
+  if (data.conversationStarters && data.conversationStarters.length > 0) {
+    const sec2 = document.createElement("div");
+    sec2.className = "activity-green-box";
+    
+    const questionsHtml = data.conversationStarters.map(q => `
+      <div class="box-inner-card question-card">
+        <p class="box-text">“${escapeHtml(q.replace(/^["'“]|["'”]$/g, ''))}”</p>
+      </div>
+    `).join('');
+
+    sec2.innerHTML = `
+      <h3 class="box-heading">Conversation starters</h3>
+      <div class="questions-list">
+        ${questionsHtml}
+      </div>
+    `;
+    card.appendChild(sec2);
+  }
+
+  // Section 3: Why This Activity Fits (Secondary Pale/Neutral Box)
+  if (data.whyItFits) {
+    const sec3 = document.createElement("div");
+    sec3.className = "activity-secondary-box";
+    sec3.innerHTML = `
+      <h4 class="secondary-heading">Why This Activity Fits</h4>
+      <p class="secondary-text">${escapeHtml(data.whyItFits)}</p>
+    `;
+    card.appendChild(sec3);
+  }
+
+  activityContent.appendChild(card);
+  resultState.style.display = "block";
+}
+
+function createSectionBlock(icon, titleText, contentNode) {
+  const block = document.createElement("div");
+  block.className = "activity-section-block";
+  
+  const h = document.createElement("div");
+  h.className = "activity-section-title";
+  h.innerHTML = `<span class="material-symbols-outlined">${icon}</span> ${escapeHtml(titleText)}`;
+  block.appendChild(h);
+
+  const b = document.createElement("div");
+  b.className = "activity-section-body";
+  if (typeof contentNode === "string") {
+    b.innerHTML = contentNode;
+  } else if (contentNode instanceof HTMLElement) {
+    b.appendChild(contentNode);
+  }
+  block.appendChild(b);
+  return block;
+}
+
+function escapeHtml(str) {
+  return String(str || '')
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+init();
+</script>
+</body>
+</html>

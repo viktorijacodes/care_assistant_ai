@@ -1,0 +1,9 @@
+{
+  "remote_agent_runtime_id": "projects/791594136072/locations/us-central1/reasoningEngines/7182005829464227840",
+  "remote_agent_runtime_uri": "https://us-central1-aiplatform.googleapis.com/reasoningEngines/v1/projects/791594136072/locations/us-central1/reasoningEngines/7182005829464227840",
+  "deployment_target": "agent_runtime",
+  "is_a2a": true,
+  "language": "python",
+  "agent_directory": "app",
+  "deployment_timestamp": "2026-10-23T18:22:34.385129+00:00"
+}
