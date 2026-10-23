@@ -1,4 +1,4 @@
-# Care Assistant AI 🩺
+# Care Assistant AI 
 
 **Health Memory Activity Planner for Nursing & Care Staff**
 
@@ -6,7 +6,7 @@ Care Assistant AI is an intelligent healthcare web application designed to help 
 
 ---
 
-## 🌟 Key Features
+##  Key Features
 
 - **Personalized Resident Selection**: Interactive resident grid featuring tailored patient profiles (Astrid, Erik, Ingrid, Lars, Birgitta, Sven, Margareta, Nils, Eva) with mobility status, cognitive condition, and personal preferences/memories.
 - **Duration Presets**: Quick selection for activity durations (`5 minutes or less`, `5–15 minutes`, `15–30 minutes`, `30+ minutes`).
@@ -18,7 +18,7 @@ Care Assistant AI is an intelligent healthcare web application designed to help 
 
 ---
 
-## 🛠️ Architecture & Technologies
+##  Architecture & Technologies
 
 - **Frontend**: HTML5, Modern CSS3 (Grid/Flexbox), Vanilla JavaScript (ES6+), FastAPI static file server.
 - **AI Agent Backend**: Built with [Google ADK (Agent Development Kit)](https://github.com/google/adk) and Gemini models.
@@ -27,7 +27,7 @@ Care Assistant AI is an intelligent healthcare web application designed to help 
 
 ---
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### Prerequisites
 
@@ -67,7 +67,7 @@ Open your browser and navigate to `http://localhost:8080` (or `http://localhost:
 
 ---
 
-## ☁️ Deployment
+##  Deployment
 
 Deploy the web frontend directly to Google Cloud Run:
 
@@ -77,6 +77,6 @@ gcloud run deploy care-assistant-frontend --source=frontend --region=us-central1
 
 ---
 
-## 📄 License
+##  License
 
 This project is open-source and available under the MIT License.
